@@ -1,0 +1,7 @@
+name "plswork"
+description "DS3 SC Convergence extractor"
+authors "jr"
+copyright "Copyright © 2025, jr"
+license "BSL-1.0"
+
+dflags "-link-defaultlib-shared=false" platform="ldc"
