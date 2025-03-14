@@ -17,8 +17,9 @@ import std.stdio;
  */
 void unzipModengine(const string zipFilename)
 {
+    import std.algorithm.searching : endsWith;
     import std.array : array, join;
-    import std.file : attrIsDir, exists, mkdirRecurse, read, write;
+    import std.file : exists, mkdirRecurse, read, write;
     import std.path : baseName, dirName, dirSeparator, pathSplitter;
     import std.zip : ZipArchive;
 
@@ -34,7 +35,7 @@ void unzipModengine(const string zipFilename)
 
         if (path.exists) continue;
 
-        if (member.fileAttributes.attrIsDir)
+        if (filename.endsWith(dirSeparator))
         {
             mkdirRecurse(path);
             continue;
@@ -57,8 +58,9 @@ void unzipModengine(const string zipFilename)
  */
 void unzipOther(const string zipFilename, const string subDir = string.init)
 {
+    import std.algorithm.searching : endsWith;
     import std.array : array, join;
-    import std.file : FileException, attrIsDir, exists, mkdirRecurse, read, write;
+    import std.file : FileException, exists, mkdirRecurse, read, write;
     import std.path : baseName, buildPath, dirName, dirSeparator, pathSplitter;
     import std.zip : ZipArchive;
 
@@ -74,12 +76,11 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
 
         if (path.exists) continue;
 
-        if (member.fileAttributes.attrIsDir)
+        if (filename.endsWith(dirSeparator))
         {
             mkdirRecurse(path);
             continue;
         }
-
 
         try
         {
