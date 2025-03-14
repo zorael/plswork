@@ -32,8 +32,6 @@ void unzipModengine(const string zipFilename)
             .array[1..$]
             .join(dirSeparator);
 
-        zip.expand(member);
-
         if (path.exists) continue;
 
         if (member.fileAttributes.attrIsDir)
@@ -42,8 +40,8 @@ void unzipModengine(const string zipFilename)
             continue;
         }
 
-        const dir = path.dirName;
-        mkdirRecurse(dir);
+        mkdirRecurse(path.dirName);
+        zip.expand(member);
         write(path, member.expandedData);
     }
 }
@@ -74,8 +72,6 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
             buildPath(subDir, filename) :
             filename;
 
-        zip.expand(member);
-
         if (path.exists) continue;
 
         if (member.fileAttributes.attrIsDir)
@@ -84,11 +80,11 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
             continue;
         }
 
-        const dir = path.dirName;
-        mkdirRecurse(dir);
 
         try
         {
+            mkdirRecurse(path.dirName);
+            zip.expand(member);
             write(path, member.expandedData);
         }
         catch (FileException e)
