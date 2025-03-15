@@ -30,7 +30,7 @@ void unzipModengine(const string zipFilename)
 
     auto zip = new ZipArchive(zipFilename.read);
 
-    foreach (immutable filename, member; zip.directory)
+    foreach (const filename, member; zip.directory)
     {
         const path = pathSplitter(filename)
             .array[1..$]
@@ -70,7 +70,7 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
 
     auto zip = new ZipArchive(zipFilename.read);
 
-    foreach (immutable filename, member; zip.directory)
+    foreach (const filename, member; zip.directory)
     {
         const path = (subDir.length > 0) ?
             buildPath(subDir, filename) :
@@ -146,7 +146,7 @@ void modifyTOML(const string filename)
     }
 
     writeln(i"Writing modified ModEngine .toml file to $(filename) ...");
-    immutable fileString = sink[].join("\n");
+    const fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
 
@@ -200,7 +200,7 @@ void modifyINI(const string filename)
     }
 
     writeln(i"Writing modified Seamless .ini file to $(filename) ...");
-    immutable fileString = sink[].join("\n");
+    const fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
 
@@ -282,7 +282,7 @@ auto verifyInstallation()
         "config_darksouls3.toml",
     ];
 
-    const mustNotExist =
+    static immutable mustNotExist =
     [
         "HoodiePatcher.dll",
         "HoodiePatcher.ini",
