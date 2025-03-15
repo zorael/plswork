@@ -25,7 +25,7 @@ void unzipModengine(const string zipFilename)
     import std.path : baseName, dirName, dirSeparator, pathSplitter;
     import std.zip : ZipArchive;
 
-    writeln("Extracting ", zipFilename.baseName, " ...");
+    writeln(i"Extracting $(zipFilename.baseName) ...");
 
     auto zip = new ZipArchive(zipFilename.read);
 
@@ -66,7 +66,7 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
     import std.path : baseName, buildPath, dirName, dirSeparator, pathSplitter;
     import std.zip : ZipArchive;
 
-    writeln("Extracting ", zipFilename.baseName, " ...");
+    writeln(i"Extracting $(zipFilename.baseName) ...");
 
     auto zip = new ZipArchive(zipFilename.read);
 
@@ -146,7 +146,7 @@ void modifyTOML(const string filename)
         }
     }
 
-    writeln("Writing modified ModEngine .toml file to ", filename, " ...");
+    writeln(i"Writing modified ModEngine .toml file to $(filename) ...");
     immutable fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
@@ -201,7 +201,7 @@ void modifyINI(const string filename)
         }
     }
 
-    writeln("Writing modified Seamless .ini file to ", filename, " ...");
+    writeln(i"Writing modified Seamless .ini file to $(filename) ...");
     immutable fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
@@ -262,14 +262,15 @@ auto verifyInstallation()
         "dinput8.dll",
     ];
 
-    bool allOK = true;
+    bool success = true;
 
     foreach (const filename; mustExist)
     {
         if (!filename.exists)
         {
-            writeln("Missing file: ", filename);
-            allOK = false;
+            if (success) writeln();
+            writeln(i"Missing file: $(filename)");
+            success = false;
         }
     }
 
@@ -277,12 +278,13 @@ auto verifyInstallation()
     {
         if (filename.exists)
         {
-            writeln("File should not exist: ", filename);
-            allOK = false;
+            if (success) writeln();
+            writeln(i"File should not exist: $(filename)");
+            success = false;
         }
     }
 
-    return allOK;
+    return success;
 }
 
 
