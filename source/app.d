@@ -210,21 +210,58 @@ void modifyINI(const string filename)
 // removeUnwantedRootFiles
 /**
     Removes unwanted files from the root directory.
+
+    Returns:
+        true if all files were removed successfully; false otherwise.
  */
-void removeUnwantedRootFiles()
+auto removeUnwantedRootFiles()
 {
-    import std.file : SpanMode, dirEntries, rename;
+    import std.algorithm.comparison : among;
+    import std.file : FileException, SpanMode, dirEntries, isDir;
     import std.path : baseName, globMatch;
 
     auto root = dirEntries(".", SpanMode.shallow);
+    bool success = true;
 
-    foreach (const file; root)
+    foreach (/*const*/ filename; root)
     {
-        if (file.baseName.globMatch("*.dll") || file.baseName.globMatch("*.ini"))
+        const fileBaseName = filename.baseName;
+
+        if (fileBaseName.globMatch("*.dll") ||
+            fileBaseName.globMatch("*.ini") ||
+            fileBaseName.among!(
+                "launchmod_armoredcore6.bat",
+                "launchmod_eldenring.bat",
+                "config_armoredcore6.toml",
+                "config_eldenring.toml",
+                "README.txt",
+                "mod"))
         {
-            rename(file, file ~ ".bak");
+            try
+            {
+                if (filename.isDir)
+                {
+                    import std.file : rmdir;
+                    writeln(i"Removing unwanted directory: $(fileBaseName) ...");
+                    rmdir(filename);
+                }
+                else
+                {
+                    import std.file : remove;
+                    writeln(i"Removing unwanted file: $(fileBaseName) ...");
+                    remove(filename);
+                }
+            }
+            catch (FileException e)
+            {
+                if (success) writeln();
+                writeln(e.msg);
+                success = false;
+            }
         }
     }
+
+    return success;
 }
 
 
