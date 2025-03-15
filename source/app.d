@@ -82,10 +82,9 @@ void unzipArchive(
 
             if (numDirsToSkip > split.walkLength)
             {
-                import std.format : format;
-                enum pattern = "File %s in %s did not have %d directories to skip";
-                const message = pattern.format(filename, zipFilename, numDirsToSkip);
-                throw new Exception(message);
+                import std.conv : text;
+                const message = i"File $(filename) in $(zipFilename) did not have $(numDirsToSkip) directories to skip";
+                throw new Exception(message.text);
             }
 
             path = split
