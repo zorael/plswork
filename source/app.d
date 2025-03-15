@@ -57,7 +57,7 @@ void unzipArchive(
 
     foreach (const filename, member; zip.directory)
     {
-        string path = filename;
+        string path = filename;  // mutable
 
         if (numDirsToSkip > 0)
         {
@@ -246,7 +246,7 @@ auto removeUnwantedRootFiles()
             }
             catch (FileException e)
             {
-                if (success) writeln();
+                writeln();
                 writeln(e.msg);
                 success = false;
             }
@@ -262,7 +262,7 @@ auto removeUnwantedRootFiles()
     Verifies the installation.
 
     Returns:
-        true if the installation is OK; false otherwise.
+        true if the installation seems correct; false otherwise.
  */
 auto verifyInstallation() @safe
 {
@@ -324,7 +324,8 @@ public:
     The main function.
 
     Returns:
-        0 if successful; 1 otherwise.
+        0 if the extraction, modification, removal and verification were all
+        successful; 1 otherwise.
  */
 int main()
 {
@@ -399,16 +400,17 @@ int main()
             writeln();
 
             const verifySuccess = verifyInstallation();
+            writeln();
+
             success = removeSuccess && verifySuccess;
         }
     }
     catch (Exception e)
     {
         writeln(e);
+        writeln();
         success = false;
     }
-
-    writeln();
 
     if (!success)
     {
@@ -421,7 +423,6 @@ int main()
 
     writeln();
     writeln("Press Enter to exit.");
-
     stdin.flush();
     readln();
 
