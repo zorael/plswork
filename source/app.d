@@ -106,6 +106,8 @@ void unzipArchive(
         zip.expand(member);
         write(path, member.expandedData);
     }
+
+    destroy(zip);
 }
 
 
