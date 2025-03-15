@@ -35,6 +35,10 @@ import std.stdio : File, readln, stdin, writeln;
         zipFilename = The filename of the zip file.
         subdirectory = The optional subdirectory to unzip into.
         numDirsToSkip = The optional number of directories to skip.
+
+    Throws:
+        Exception if the number of directories to skip is greater than the
+        number of directories for any one file in the zip file.
  */
 void unzipArchive(
     const string zipFilename,
@@ -94,7 +98,7 @@ void unzipArchive(
 
 // modifyTOML
 /**
-    Modifies the ModEngine .toml file.
+    Modifies the ModEngine2 .toml file.
 
     Params:
         filename = The filename of the .toml file.
