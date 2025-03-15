@@ -333,6 +333,13 @@ int main()
     writeln("======================");
     writeln();
 
+    enum ZipGlobs
+    {
+        modengine = "ModEngine-2*.zip",
+        hoodiePatcher = "HoodiePatcher v1.5*.zip",
+        seamless = "DS3 Seamless*.zip",
+    }
+
     string modengineZipFilename;
     string hoodiePatcherZipFilename;
     string seamlessZipFilename;
@@ -343,15 +350,15 @@ int main()
     {
         const fileBaseName = entry.name.baseName;
 
-        if (fileBaseName.globMatch("ModEngine-2*.zip"))
+        if (fileBaseName.globMatch(cast(string) ZipGlobs.modengine))
         {
             modengineZipFilename = entry.name;
         }
-        else if (fileBaseName.globMatch("HoodiePatcher v1.5*.zip"))
+        else if (fileBaseName.globMatch(cast(string) ZipGlobs.hoodiePatcher))
         {
             hoodiePatcherZipFilename = entry.name;
         }
-        else if (fileBaseName.globMatch("DS3 Seamless*.zip"))
+        else if (fileBaseName.globMatch(cast(string) ZipGlobs.seamless))
         {
             seamlessZipFilename = entry.name;
         }
@@ -365,19 +372,19 @@ int main()
 
         if (modengineZipFilename.length == 0)
         {
-            writeln("[ERROR] Missing ModEngine zip.");
+            writeln(i`[ERROR] Missing ModEngine zip. (no matches for "$(cast(string) ZipGlobs.modengine)")`);
             missingSometehing = true;
         }
 
         if (hoodiePatcherZipFilename.length == 0)
         {
-            writeln("[ERROR] Missing HoodiePatcher zip.");
+            writeln(i`[ERROR] Missing HoodiePatcher zip. (no matches for "$(cast(string) ZipGlobs.hoodiePatcher)")`);
             missingSometehing = true;
         }
 
         if (seamlessZipFilename.length == 0)
         {
-            writeln("[ERROR] Missing Seamless Co-op zip.");
+            writeln(i`[ERROR] Missing Seamless Co-op zip. (no matches for "$(cast(string) ZipGlobs.seamless)")`);
             missingSometehing = true;
         }
 
