@@ -347,7 +347,7 @@ int main()
         {
             modengineZipFilename = entry.name;
         }
-        else if (fileBaseName.globMatch("HoodiePatcher*.zip"))
+        else if (fileBaseName.globMatch("HoodiePatcher v1.5*.zip"))
         {
             hoodiePatcherZipFilename = entry.name;
         }
