@@ -399,6 +399,8 @@ int main()
             unzipOther(hoodiePatcherZipFilename, "HoodiePatcher");
             unzipOther(seamlessZipFilename);
 
+            writeln();
+
             modifyTOML("config_darksouls3.toml");
             modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
 
@@ -419,12 +421,14 @@ int main()
 
     if (!success)
     {
-        writeln("There were errors. Press Enter to exit.");
+        writeln("There were errors :c");
     }
     else
     {
-        writeln("No errors! Press Enter to exit.");
+        writeln(r"No errors \o/");
     }
+
+    writeln("Press Enter to exit.");
 
     stdin.flush();
     readln();
