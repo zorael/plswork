@@ -65,7 +65,6 @@ void unzipArchive(
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
     import std.file : write;
-    import std.range : walkLength;
     import std.zip : ZipArchive;
 
     writeln(i"Extracting: $(zipFilename.baseName) ...");
@@ -74,22 +73,20 @@ void unzipArchive(
 
     foreach (const filename, member; zip.directory)
     {
-        string path = filename;  // mutable
+        string path = filename;
 
         if (numDirsToSkip > 0)
         {
-            auto split = pathSplitter(filename);
+            auto splitPath = pathSplitter(filename).array;
 
-            if (numDirsToSkip > split.walkLength)
+            if (numDirsToSkip > splitPath.length)
             {
                 import std.conv : text;
                 const message = i"File $(filename) in $(zipFilename) did not have $(numDirsToSkip) directories to skip";
                 throw new Exception(message.text);
             }
 
-            path = split
-                .array[numDirsToSkip..$]
-                .join(dirSeparator);
+            path = splitPath[numDirsToSkip..$].join(dirSeparator);
         }
 
         if (subdirectory.length > 0)
