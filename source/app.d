@@ -26,7 +26,7 @@ void unzipModengine(const string zipFilename)
     import std.file : write;
     import std.zip : ZipArchive;
 
-    writeln(i"Extracting $(zipFilename.baseName) ...");
+    writeln(i"Extracting: $(zipFilename.baseName) ...");
 
     auto zip = new ZipArchive(zipFilename.read);
 
@@ -66,7 +66,7 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
     import std.file : write;
     import std.zip : ZipArchive;
 
-    writeln(i"Extracting $(zipFilename.baseName) ...");
+    writeln(i"Extracting: $(zipFilename.baseName) ...");
 
     auto zip = new ZipArchive(zipFilename.read);
 
@@ -145,7 +145,7 @@ void modifyTOML(const string filename)
         }
     }
 
-    writeln(i"Writing modified ModEngine .toml file to $(filename) ...");
+    writeln(i"Modifying: $(filename) ...");
     const fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
@@ -199,7 +199,7 @@ void modifyINI(const string filename)
         }
     }
 
-    writeln(i"Writing modified Seamless .ini file to $(filename) ...");
+    writeln(i"Modifying: $(filename) ...");
     const fileString = sink[].join("\n");
     File(filename, "w").writeln(fileString);
 }
@@ -289,6 +289,8 @@ auto verifyInstallation()
         "modengine.ini",
         "dinput8.dll",
     ];
+
+    writeln("Verifying ...");
 
     bool success = true;
 
@@ -386,15 +388,15 @@ int main()
             unzipModengine(modengineZipFilename);
             unzipOther(hoodiePatcherZipFilename, "HoodiePatcher");
             unzipOther(seamlessZipFilename);
-
             writeln();
 
             modifyTOML("config_darksouls3.toml");
             modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
-
             writeln();
 
             const removeSuccess = removeUnwantedRootFiles();
+            writeln();
+
             const verifySuccess = verifyInstallation();
             success = removeSuccess && verifySuccess;
         }
