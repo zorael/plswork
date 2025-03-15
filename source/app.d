@@ -1,5 +1,5 @@
 /**
-    Uffie Patchy Fixy.
+    Uffie Puffie Patchy Fixy.
 
     Extracts zips for ModEngine2, a custom HoodiePatcher, and Dark Souls 3 Seamless Co-op.
 
@@ -442,8 +442,8 @@ public:
  */
 int main()
 {
-    writeln("Uffie Patchy Fixy v0.1");
-    writeln("======================");
+    writeln("Uffie Puffie Patchy Fixy v0.1");
+    writeln("=============================");
     writeln();
 
     const zipFilenames = getZipFilenames(outputToTerminal: true);
