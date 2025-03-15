@@ -7,7 +7,9 @@ module jr.plswork;
 
 private:
 
-import std.stdio;
+import std.file;
+import std.path;
+import std.stdio : File, readln, stdin, writeln;
 
 
 // unzipModengine
@@ -21,8 +23,7 @@ void unzipModengine(const string zipFilename)
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
-    import std.file : exists, mkdirRecurse, read, write;
-    import std.path : baseName, dirName, dirSeparator, pathSplitter;
+    import std.file : write;
     import std.zip : ZipArchive;
 
     writeln(i"Extracting $(zipFilename.baseName) ...");
@@ -62,8 +63,7 @@ void unzipOther(const string zipFilename, const string subDir = string.init)
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
-    import std.file : FileException, exists, mkdirRecurse, read, write;
-    import std.path : baseName, buildPath, dirName, dirSeparator, pathSplitter;
+    import std.file : write;
     import std.zip : ZipArchive;
 
     writeln(i"Extracting $(zipFilename.baseName) ...");
@@ -110,7 +110,6 @@ void modifyTOML(const string filename)
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
     import std.array : Appender, join;
-    import std.file : readText;
 
     Appender!(string[]) sink;
     sink.reserve(128);
@@ -164,7 +163,6 @@ void modifyINI(const string filename)
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
     import std.array : Appender, join;
-    import std.file : readText;
 
     Appender!(string[]) sink;
     sink.reserve(128);
@@ -217,8 +215,6 @@ void modifyINI(const string filename)
 auto removeUnwantedRootFiles()
 {
     import std.algorithm.comparison : among;
-    import std.file : FileException, SpanMode, dirEntries, isDir;
-    import std.path : baseName, globMatch;
 
     auto root = dirEntries(".", SpanMode.shallow);
     bool success = true;
@@ -241,13 +237,11 @@ auto removeUnwantedRootFiles()
             {
                 if (filename.isDir)
                 {
-                    import std.file : rmdir;
                     writeln(i"Removing unwanted directory: $(fileBaseName) ...");
                     rmdir(filename);
                 }
                 else
                 {
-                    import std.file : remove;
                     writeln(i"Removing unwanted file: $(fileBaseName) ...");
                     remove(filename);
                 }
@@ -274,10 +268,7 @@ auto removeUnwantedRootFiles()
  */
 auto verifyInstallation()
 {
-    import std.file : exists;
-    import std.path : buildPath;
-
-    const mustExist =
+    static immutable mustExist =
     [
         buildPath("The Convergence", "project.json"),
         buildPath("The Convergence", "parts"),
@@ -334,9 +325,6 @@ public:
  */
 int main()
 {
-    import std.file : SpanMode, dirEntries;
-    import std.path : baseName, globMatch;
-
     writeln("Uffie Patchy Fixy v0.1");
     writeln("======================");
     writeln();
@@ -393,8 +381,6 @@ int main()
         }
         else
         {
-            import std.path : buildPath;
-
             unzipModengine(modengineZipFilename);
             unzipOther(hoodiePatcherZipFilename, "HoodiePatcher");
             unzipOther(seamlessZipFilename);
