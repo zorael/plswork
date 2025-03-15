@@ -365,24 +365,25 @@ int main()
 
         if (modengineZipFilename.length == 0)
         {
-            writeln("Missing ModEngine zip.");
+            writeln("[ERROR] Missing ModEngine zip.");
             missingSometehing = true;
         }
 
         if (hoodiePatcherZipFilename.length == 0)
         {
-            writeln("Missing HoodiePatcher zip.");
+            writeln("[ERROR] Missing HoodiePatcher zip.");
             missingSometehing = true;
         }
 
         if (seamlessZipFilename.length == 0)
         {
-            writeln("Missing Seamless Co-op zip.");
+            writeln("[ERROR] Missing Seamless Co-op zip.");
             missingSometehing = true;
         }
 
         if (missingSometehing)
         {
+            writeln();
             success = false;
         }
         else
