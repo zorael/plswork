@@ -103,7 +103,7 @@ void unzipArchive(
     Params:
         filename = The filename of the .toml file.
  */
-void modifyTOML(const string filename)
+void modifyTOML(const string filename) @safe
 {
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
@@ -156,7 +156,7 @@ void modifyTOML(const string filename)
     Params:
         filename = The filename of the .ini file.
  */
-void modifyINI(const string filename)
+void modifyINI(const string filename) @safe
 {
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
@@ -264,7 +264,7 @@ auto removeUnwantedRootFiles()
     Returns:
         true if the installation is OK; false otherwise.
  */
-auto verifyInstallation()
+auto verifyInstallation() @safe
 {
     static immutable mustExist =
     [
