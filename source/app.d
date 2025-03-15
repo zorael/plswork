@@ -110,7 +110,7 @@ void modifyTOML(const string filename)
     import std.array : Appender, join;
 
     Appender!(string[]) sink;
-    sink.reserve(128);
+    sink.reserve(64);
     bool skipNext;
 
     auto fileLines = filename
