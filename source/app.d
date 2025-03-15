@@ -1,7 +1,9 @@
 /**
     Uffie Patchy Fixy.
+
+    plswork
  */
-module plswork;
+module jr.plswork;
 
 private:
 
