@@ -306,7 +306,7 @@ auto verifyInstallation()
         if (!filename.exists)
         {
             if (success) writeln();
-            writeln(i"Missing file: $(filename)");
+            writeln(i"[ERROR] Missing file: $(filename)");
             success = false;
         }
     }
@@ -316,7 +316,7 @@ auto verifyInstallation()
         if (filename.exists)
         {
             if (success) writeln();
-            writeln(i"File should not exist: $(filename)");
+            writeln(i"[ERROR] File must not exist: $(filename)");
             success = false;
         }
     }
