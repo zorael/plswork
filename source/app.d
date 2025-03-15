@@ -1,7 +1,21 @@
 /**
     Uffie Patchy Fixy.
 
+    Extracts zips for ModEngine2, a custom HoodiePatcher, and Dark Souls 3 Seamless Co-op.
+
+    Modifies the ModEngine .toml file and Seamless Co-op .ini file for use with
+    The Convergence mod.
+
+    Removes unwanted files from the root directory.
+
+    Verifies the installation.
+
     plswork
+
+    See_Also:
+        https://github.com/soulsmods/ModEngine2/releases
+        https://www.nexusmods.com/darksouls3/mods/1933
+        https://www.nexusmods.com/darksouls3/mods/1895
  */
 module jr.plswork;
 
@@ -324,6 +338,9 @@ public:
 // main
 /**
     The main function.
+
+    Returns:
+        0 if successful; 1 otherwise.
  */
 int main()
 {
