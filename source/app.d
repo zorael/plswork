@@ -337,15 +337,17 @@ int main()
 
     foreach (const entry; files)
     {
-        if (entry.baseName.globMatch("ModEngine-2*.zip"))
+        const fileBaseName = entry.name.baseName;
+
+        if (fileBaseName.globMatch("ModEngine-2*.zip"))
         {
             modengineZipFilename = entry.name;
         }
-        else if (entry.baseName.globMatch("HoodiePatcher*.zip"))
+        else if (fileBaseName.globMatch("HoodiePatcher*.zip"))
         {
             hoodiePatcherZipFilename = entry.name;
         }
-        else if (entry.baseName.globMatch("DS3 Seamless*.zip"))
+        else if (fileBaseName.globMatch("DS3 Seamless*.zip"))
         {
             seamlessZipFilename = entry.name;
         }
