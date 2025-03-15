@@ -26,6 +26,23 @@ import std.path;
 import std.stdio : File, readln, stdin, writeln;
 
 
+// ZipGlobs
+/**
+    The glob patterns for the zip files.
+ */
+enum ZipGlobs
+{
+    /// Glob for the ModEngine2 zip file.
+    modengine = "ModEngine-2*.zip",
+
+    /// Glob for the HoodiePatcher zip file.
+    hoodiePatcher = "HoodiePatcher v1.5*.zip",
+
+    /// Glob for the Seamless Co-op zip file.
+    seamless = "DS3 Seamless*.zip",
+}
+
+
 // unzipArchive
 /**
     Unzips an archive into the current working directory.
@@ -316,6 +333,103 @@ auto verifyInstallation() @safe
 }
 
 
+// waitForEnter
+/**
+    Waits for the user to press Enter.
+
+    Params:
+        success = Whether the previous operations were successful and the
+            output message should reflect that.
+
+    Returns:
+        0 if the previous operations were successful; 1 otherwise.
+ */
+auto waitForEnter(const bool success)
+{
+    const message = success ?
+        r"No errors \o/" :
+        "There were errors :c";
+
+    writeln();
+    writeln(message);
+    writeln();
+    writeln("Press Enter to exit.");
+    stdin.flush();
+    readln();
+
+    return success ? 0 : 1;
+}
+
+
+// getZipFilenames
+/**
+    Looks for zip files that matc the glob patterns of the ZipGlobs enum.
+    Populates a Voldemort struct with the filenames and returns it.
+
+    Returns:
+        A Voldemort with the filenames of the zip files.
+ */
+auto getZipFilenames(const bool outputToTerminal)
+{
+    static struct ZipFilenames
+    {
+        string modengine;
+        string hoodiePatcher;
+        string seamless;
+
+        auto success() const
+        {
+            return
+                (modengine.length > 0) &&
+                (hoodiePatcher.length > 0) &&
+                (seamless.length > 0);
+        }
+    }
+
+    ZipFilenames zipFilenames;
+
+    auto files = dirEntries(".", SpanMode.shallow);
+
+    foreach (const entry; files)
+    {
+        const fileBaseName = entry.name.baseName;
+
+        if (fileBaseName.globMatch(cast(string) ZipGlobs.modengine))
+        {
+            zipFilenames.modengine = entry.name;
+        }
+        else if (fileBaseName.globMatch(cast(string) ZipGlobs.hoodiePatcher))
+        {
+            zipFilenames.hoodiePatcher = entry.name;
+        }
+        else if (fileBaseName.globMatch(cast(string) ZipGlobs.seamless))
+        {
+            zipFilenames.seamless = entry.name;
+        }
+    }
+
+    if (outputToTerminal && !zipFilenames.success)
+    {
+        if (zipFilenames.modengine.length == 0)
+        {
+            writeln(i`[ERROR] Missing ModEngine zip. (no matches for "$(cast(string) ZipGlobs.modengine)")`);
+        }
+
+        if (zipFilenames.hoodiePatcher.length == 0)
+        {
+            writeln(i`[ERROR] Missing HoodiePatcher zip. (no matches for "$(cast(string) ZipGlobs.hoodiePatcher)")`);
+        }
+
+        if (zipFilenames.seamless.length == 0)
+        {
+            writeln(i`[ERROR] Missing Seamless Co-op zip. (no matches for "$(cast(string) ZipGlobs.seamless)")`);
+        }
+    }
+
+    return zipFilenames;
+}
+
+
 public:
 
 
@@ -333,106 +447,37 @@ int main()
     writeln("======================");
     writeln();
 
-    enum ZipGlobs
+    const zipFilenames = getZipFilenames(outputToTerminal: true);
+
+    if (!zipFilenames.success)
     {
-        modengine = "ModEngine-2*.zip",
-        hoodiePatcher = "HoodiePatcher v1.5*.zip",
-        seamless = "DS3 Seamless*.zip",
+        return waitForEnter(success: false);
     }
-
-    string modengineZipFilename;
-    string hoodiePatcherZipFilename;
-    string seamlessZipFilename;
-
-    auto files = dirEntries(".", SpanMode.shallow);
-
-    foreach (const entry; files)
-    {
-        const fileBaseName = entry.name.baseName;
-
-        if (fileBaseName.globMatch(cast(string) ZipGlobs.modengine))
-        {
-            modengineZipFilename = entry.name;
-        }
-        else if (fileBaseName.globMatch(cast(string) ZipGlobs.hoodiePatcher))
-        {
-            hoodiePatcherZipFilename = entry.name;
-        }
-        else if (fileBaseName.globMatch(cast(string) ZipGlobs.seamless))
-        {
-            seamlessZipFilename = entry.name;
-        }
-    }
-
-    bool success;
 
     try
     {
-        bool missingSometehing;
+        unzipArchive(zipFilename: zipFilenames.modengine, numDirsToSkip: 1);
+        unzipArchive(zipFilename: zipFilenames.hoodiePatcher, subdirectory: "HoodiePatcher");
+        unzipArchive(zipFilename: zipFilenames.seamless);
+        writeln();
 
-        if (modengineZipFilename.length == 0)
-        {
-            writeln(i`[ERROR] Missing ModEngine zip. (no matches for "$(cast(string) ZipGlobs.modengine)")`);
-            missingSometehing = true;
-        }
+        modifyTOML("config_darksouls3.toml");
+        modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
+        writeln();
 
-        if (hoodiePatcherZipFilename.length == 0)
-        {
-            writeln(i`[ERROR] Missing HoodiePatcher zip. (no matches for "$(cast(string) ZipGlobs.hoodiePatcher)")`);
-            missingSometehing = true;
-        }
+        const removeSuccess = removeUnwantedRootFiles();
+        writeln();
 
-        if (seamlessZipFilename.length == 0)
-        {
-            writeln(i`[ERROR] Missing Seamless Co-op zip. (no matches for "$(cast(string) ZipGlobs.seamless)")`);
-            missingSometehing = true;
-        }
+        const verifySuccess = verifyInstallation();
+        //writeln();
 
-        if (missingSometehing)
-        {
-            writeln();
-            success = false;
-        }
-        else
-        {
-            unzipArchive(zipFilename: modengineZipFilename, numDirsToSkip: 1);
-            unzipArchive(zipFilename: hoodiePatcherZipFilename, subdirectory: "HoodiePatcher");
-            unzipArchive(zipFilename: seamlessZipFilename);
-            writeln();
-
-            modifyTOML("config_darksouls3.toml");
-            modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
-            writeln();
-
-            const removeSuccess = removeUnwantedRootFiles();
-            writeln();
-
-            const verifySuccess = verifyInstallation();
-            writeln();
-
-            success = removeSuccess && verifySuccess;
-        }
+        return waitForEnter(success: (removeSuccess && verifySuccess));
     }
     catch (Exception e)
     {
         writeln(e);
-        writeln();
-        success = false;
+        return waitForEnter(success: false);
     }
 
-    if (!success)
-    {
-        writeln("There were errors :c");
-    }
-    else
-    {
-        writeln(r"No errors \o/");
-    }
-
-    writeln();
-    writeln("Press Enter to exit.");
-    stdin.flush();
-    readln();
-
-    return success ? 0 : 1;
+    assert(0, "unreachable");
 }
