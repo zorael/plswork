@@ -5,3 +5,4 @@ copyright "Copyright © 2025, jr"
 license "BSL-1.0"
 
 dflags "-link-defaultlib-shared=false" platform="ldc"
+dflags "-frame-pointer=all" platform="ldc"
