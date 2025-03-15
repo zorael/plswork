@@ -428,6 +428,7 @@ int main()
         writeln(r"No errors \o/");
     }
 
+    writeln();
     writeln("Press Enter to exit.");
 
     stdin.flush();
