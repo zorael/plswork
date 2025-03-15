@@ -26,18 +26,25 @@ import std.path;
 import std.stdio : File, readln, stdin, writeln;
 
 
-// unzipModengine
+// unzipArchive
 /**
-    Unzips the ModEngine zip file.
+    Unzips an archive into the current working directory.
+    A subdirectory and a nuber of directories to skip may optionally be supplied.
 
     Params:
         zipFilename = The filename of the zip file.
+        subdirectory = The optional subdirectory to unzip into.
+        numDirsToSkip = The optional number of directories to skip.
  */
-void unzipModengine(const string zipFilename)
+void unzipArchive(
+    const string zipFilename,
+    const string subdirectory = string.init,
+    const uint numDirsToSkip = 0)
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
     import std.file : write;
+    import std.range : walkLength;
     import std.zip : ZipArchive;
 
     writeln(i"Extracting: $(zipFilename.baseName) ...");
@@ -46,13 +53,33 @@ void unzipModengine(const string zipFilename)
 
     foreach (const filename, member; zip.directory)
     {
-        const path = pathSplitter(filename)
-            .array[1..$]
-            .join(dirSeparator);
+        string path = filename;
+
+        if (numDirsToSkip > 0)
+        {
+            auto split = pathSplitter(filename);
+
+            if (numDirsToSkip > split.walkLength)
+            {
+                import std.format : format;
+                enum pattern = "File %s in %s did not have %d directories to skip";
+                const message = pattern.format(filename, zipFilename, numDirsToSkip);
+                throw new Exception(message);
+            }
+
+            path = split
+                .array[numDirsToSkip..$]
+                .join(dirSeparator);
+        }
+
+        if (subdirectory.length > 0)
+        {
+            path = buildPath(subdirectory, path);
+        }
 
         if (path.exists) continue;
 
-        if (filename.endsWith(dirSeparator))
+        if (filename.endsWith(dirSeparator) || member.fileAttributes.attrIsDir)
         {
             mkdirRecurse(path);
             continue;
@@ -61,53 +88,6 @@ void unzipModengine(const string zipFilename)
         mkdirRecurse(path.dirName);
         zip.expand(member);
         write(path, member.expandedData);
-    }
-}
-
-
-// unzipOther
-/**
-    Unzips a file.
-
-    Params:
-        zipFilename = The filename of the zip file.
-        subDir = The optional subdirectory to unzip into.
- */
-void unzipOther(const string zipFilename, const string subDir = string.init)
-{
-    import std.algorithm.searching : endsWith;
-    import std.array : array, join;
-    import std.file : write;
-    import std.zip : ZipArchive;
-
-    writeln(i"Extracting: $(zipFilename.baseName) ...");
-
-    auto zip = new ZipArchive(zipFilename.read);
-
-    foreach (const filename, member; zip.directory)
-    {
-        const path = (subDir.length > 0) ?
-            buildPath(subDir, filename) :
-            filename;
-
-        if (path.exists) continue;
-
-        if (filename.endsWith(dirSeparator))
-        {
-            mkdirRecurse(path);
-            continue;
-        }
-
-        try
-        {
-            mkdirRecurse(path.dirName);
-            zip.expand(member);
-            write(path, member.expandedData);
-        }
-        catch (FileException e)
-        {
-            if (e.msg == "Is a directory") continue;
-        }
     }
 }
 
@@ -402,9 +382,9 @@ int main()
         }
         else
         {
-            unzipModengine(modengineZipFilename);
-            unzipOther(hoodiePatcherZipFilename, "HoodiePatcher");
-            unzipOther(seamlessZipFilename);
+            unzipArchive(zipFilename: modengineZipFilename, numDirsToSkip: 1);
+            unzipArchive(zipFilename: hoodiePatcherZipFilename, subdirectory: "HoodiePatcher");
+            unzipArchive(zipFilename: seamlessZipFilename);
             writeln();
 
             modifyTOML("config_darksouls3.toml");
