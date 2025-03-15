@@ -363,7 +363,7 @@ int main()
         }
     }
 
-    uint retval;
+    bool success;
 
     try
     {
@@ -389,7 +389,7 @@ int main()
 
         if (missingSometehing)
         {
-            retval = 2;
+            success = false;
         }
         else
         {
@@ -402,21 +402,22 @@ int main()
             modifyTOML("config_darksouls3.toml");
             modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
 
-            removeUnwantedRootFiles();
-            const allOK = verifyInstallation();
+            writeln();
 
-            if (!allOK) retval = 1;
+            const removeSuccess = removeUnwantedRootFiles();
+            const verifySuccess = verifyInstallation();
+            success = removeSuccess && verifySuccess;
         }
     }
     catch (Exception e)
     {
         writeln(e);
-        retval = 1;
+        success = false;
     }
 
     writeln();
 
-    if (retval > 0)
+    if (!success)
     {
         writeln("There were errors. Press Enter to exit.");
     }
@@ -428,5 +429,5 @@ int main()
     stdin.flush();
     readln();
 
-    return retval;
+    return success ? 0 : 1;
 }
