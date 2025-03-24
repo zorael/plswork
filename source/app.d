@@ -443,7 +443,7 @@ public:
  */
 int main()
 {
-    writeln("Uffie Puffie Patchy Fixy v0.1");
+    writeln("Uffie Puffie Patchy Fixy v0.2");
     writeln("=============================");
     writeln();
 
