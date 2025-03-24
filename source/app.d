@@ -73,6 +73,8 @@ void unzipArchive(
 
     foreach (const filename, member; zip.directory)
     {
+        if (!member.compressedSize) continue;
+
         string path = filename;
 
         if (numDirsToSkip > 0)
