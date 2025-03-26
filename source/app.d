@@ -450,7 +450,7 @@ public:
  */
 int main()
 {
-    writeln("Uffie Puffie Patchy Fixy v0.2");
+    writeln("Uffie Puffie Patchy Fixy v0.3");
     writeln("=============================");
     writeln();
 
