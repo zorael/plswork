@@ -142,7 +142,7 @@ void modifyTOML(const string filename) @safe
             continue;
         }
 
-        if (line.startsWith("external_dlls"))
+        if (line.startsWith("external_dlls = ["))
         {
             enum dllLine = `external_dlls = [ "SeamlessCoop/ds3sc.dll", "HoodiePatcher/HoodiePatcher.dll" ]`;
             sink.put(dllLine);
@@ -152,6 +152,13 @@ void modifyTOML(const string filename) @safe
             enum convergenceLine = `    { enabled = true, name = "Convergence", path = "The Convergence" }`;
             sink.put(line);
             sink.put(convergenceLine);
+            skipNext = true;
+        }
+        else if (line == "[extension.scylla_hide]")
+        {
+            enum scyllaLine = "enabled = false";
+            sink.put(line);
+            sink.put(scyllaLine);
             skipNext = true;
         }
         else
