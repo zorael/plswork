@@ -1,14 +1,17 @@
 /**
     Uffie Puffie Patchy Fixy.
 
-    Extracts zips for ModEngine2, a custom HoodiePatcher, and Dark Souls 3 Seamless Co-op.
+    Extracts zips for ModEngine2, a custom HoodiePatcher, Dark Souls III
+    Seamless Co-op and Dark Souls III: The Convergence.
 
-    Modifies the ModEngine .toml file and Seamless Co-op .ini file for use with
-    The Convergence mod.
+    Modifies the ModEngine .toml configuration file for Dark Souls III to load
+    both Seamless Co-op and The Convergence.
+
+    Modifies the Seamless Co-op .ini file to set a default co-op password.
 
     Removes unwanted files from the root directory.
 
-    Verifies the installation.
+    Verifies that required files are in place.
 
     plswork
 
@@ -16,6 +19,13 @@
         https://github.com/soulsmods/ModEngine2/releases
         https://www.nexusmods.com/darksouls3/mods/1933
         https://www.nexusmods.com/darksouls3/mods/1895
+        https://www.nexusmods.com/darksouls3/mods/672
+
+    Copyright: [JR](https://github.com/zorael)
+    License: [Boost Software License 1.0](https://www.boost.org/users/license.html)
+
+    Authors:
+        [JR](https://github.com/zorael)
  */
 module jr.plswork;
 
