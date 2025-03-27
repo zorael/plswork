@@ -426,34 +426,35 @@ auto waitForEnter(const bool success)
 }
 
 
-// getZipFilenames
+// discoverFiles
 /**
     Looks for zip files that matc the glob patterns of the ZipGlobs enum.
     Populates a Voldemort struct with the filenames and returns it.
 
     Returns:
-        A Voldemort with the filenames of the zip files.
+        A Voldemort with resolved filenames.
  */
-auto getZipFilenames(const bool outputToTerminal)
+auto discoverFiles(const bool outputToTerminal)
 {
-    static struct ZipFilenames
+    static struct Discovered
     {
-        string modengine;
-        string hoodiePatcher;
-        string seamless;
-        string convergence;
+        string modengineZip;
+        string hoodiePatcherZip;
+        string seamlessZip;
+        string convergenceZip;
+        string convergenceDir;
 
         auto success() const
         {
             return
-                (modengine.length > 0) &&
-                (hoodiePatcher.length > 0) &&
-                (seamless.length > 0) &&
-                (convergence.length > 0);
+                (modengineZip.length > 0) &&
+                (hoodiePatcherZip.length > 0) &&
+                (seamlessZip.length > 0) &&
+                ((convergenceZip.length > 0) || (convergenceDir.length > 0));
         }
     }
 
-    ZipFilenames zipFilenames;
+    Discovered found;
 
     auto files = dirEntries(".", SpanMode.shallow);
 
@@ -463,46 +464,51 @@ auto getZipFilenames(const bool outputToTerminal)
 
         if (fileBaseName.globMatch(cast(string) ZipGlobs.modengine))
         {
-            zipFilenames.modengine = entry.name;
+            found.modengineZip = entry.name;
         }
         else if (fileBaseName.globMatch(cast(string) ZipGlobs.hoodiePatcher))
         {
-            zipFilenames.hoodiePatcher = entry.name;
+            found.hoodiePatcherZip = entry.name;
         }
         else if (fileBaseName.globMatch(cast(string) ZipGlobs.seamless))
         {
-            zipFilenames.seamless = entry.name;
+            found.seamlessZip = entry.name;
         }
         else if (fileBaseName.globMatch(cast(string) ZipGlobs.convergence))
         {
-            zipFilenames.convergence = entry.name;
+            found.convergenceZip = entry.name;
+        }
+        else if (fileBaseName == "The Convergence")
+        {
+            found.convergenceDir = entry.name;
         }
     }
 
-    if (outputToTerminal && !zipFilenames.success)
+    if (outputToTerminal && !found.success)
     {
-        if (zipFilenames.modengine.length == 0)
+        if (found.modengineZip.length == 0)
         {
             writeln(i`[ERROR] Missing ModEngine zip. (no matches for "$(cast(string) ZipGlobs.modengine)")`);
         }
 
-        if (zipFilenames.hoodiePatcher.length == 0)
+        if (found.hoodiePatcherZip.length == 0)
         {
             writeln(i`[ERROR] Missing HoodiePatcher zip. (no matches for "$(cast(string) ZipGlobs.hoodiePatcher)")`);
         }
 
-        if (zipFilenames.seamless.length == 0)
+        if (found.seamlessZip.length == 0)
         {
             writeln(i`[ERROR] Missing Seamless Co-op zip. (no matches for "$(cast(string) ZipGlobs.seamless)")`);
         }
 
-        if (zipFilenames.convergence.length == 0)
+        if ((found.convergenceZip.length == 0) && (found.convergenceDir.length == 0))
         {
+            // Only mention the zip
             writeln(i`[ERROR] Missing The Convergence zip. (no matches for "$(cast(string) ZipGlobs.convergence)")`);
         }
     }
 
-    return zipFilenames;
+    return found;
 }
 
 
@@ -523,9 +529,9 @@ int main()
     writeln("=============================");
     writeln();
 
-    const zipFilenames = getZipFilenames(outputToTerminal: true);
+    const found = discoverFiles(outputToTerminal: true);
 
-    if (!zipFilenames.success)
+    if (!found.success)
     {
         return waitForEnter(success: false);
     }
@@ -537,10 +543,17 @@ int main()
         auto convergencePred(string filename) => filename.startsWith("The Convergence");
         auto seamlessPred(string filename) => filename.startsWith("SeamlessCoop");
 
-        unzipArchive(zipFilename: zipFilenames.modengine, numDirsToSkip: 1);
-        unzipArchive(zipFilename: zipFilenames.hoodiePatcher, subdirectory: "HoodiePatcher");
-        unzipArchive(zipFilename: zipFilenames.seamless, pred: &seamlessPred);
-        unzipArchive(zipFilename: zipFilenames.convergence, pred: &convergencePred);
+        unzipArchive(zipFilename: found.modengineZip, numDirsToSkip: 1);
+        unzipArchive(zipFilename: found.hoodiePatcherZip, subdirectory: "HoodiePatcher");
+        unzipArchive(zipFilename: found.seamlessZip, pred: &seamlessPred);
+
+        if (found.convergenceDir.length == 0)
+        {
+            // convergence or theConvergenceDir must either have length at this point
+            // else found.success above would have been false
+            unzipArchive(zipFilename: found.convergenceZip, pred: &convergencePred);
+        }
+
         writeln();
 
         modifyTOML("config_darksouls3.toml");
