@@ -23,7 +23,14 @@ private:
 
 import std.file;
 import std.path;
-import std.stdio : File, readln, stdin, writeln;
+import std.stdio;
+
+
+// coopPassword
+/**
+    Password for the Seamless Co-op mod.
+ */
+enum coopPassword = "uffie puffie";
 
 
 // ZipGlobs
@@ -212,7 +219,7 @@ void modifyINI(const string filename) @safe
         }
         else if (line.startsWith("cooppassword"))
         {
-            enum coopPasswordOverride = "cooppassword = uffie puffie";
+            enum coopPasswordOverride = "cooppassword = " ~ coopPassword;
             sink.put(coopPasswordOverride);
         }
         else
