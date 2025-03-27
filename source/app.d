@@ -191,7 +191,7 @@ void modifyTOML(const string filename) @safe
             sink.put(convergenceLine);
             skipNext = true;
         }
-        else if (line == "[extension.scylla_hide]")
+        else if (line.startsWith("[extension.scylla_hide]"))
         {
             enum scyllaLine = "enabled = false";
             sink.put(line);
