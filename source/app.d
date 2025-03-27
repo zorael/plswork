@@ -53,12 +53,16 @@ enum ZipGlobs
 // unzipArchive
 /**
     Unzips an archive into the current working directory.
-    A subdirectory and a nuber of directories to skip may optionally be supplied.
 
     Params:
         zipFilename = The filename of the zip file.
         subdirectory = The optional subdirectory to unzip into.
         numDirsToSkip = The optional number of directories to skip.
+        pred = Optional `bool delegate(string)` predicate to filter files;
+            if supplied, any filenames passed to it which causes it to return
+            `false` will be omitted from extraction.
+        showProgress = Whether to show a "progress bar" by outputting a dot
+            for each file extracted.
 
     Throws:
         Exception if the number of directories to skip is greater than the
@@ -67,20 +71,48 @@ enum ZipGlobs
 void unzipArchive(
     const string zipFilename,
     const string subdirectory = string.init,
-    const uint numDirsToSkip = 0)
+    const uint numDirsToSkip = 0,
+    bool delegate(string) pred = null,
+    const bool showProgress = true)
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
-    import std.file : write;
     import std.zip : ZipArchive;
 
-    writeln(i"Extracting: $(zipFilename.baseName) ...");
+    enum progressChar = '.';
+
+    if (showProgress)
+    {
+        std.stdio.write(i"Extracting: $(zipFilename.baseName) ");
+        stdout.flush();
+    }
+    else
+    {
+        writeln(i"Extracting: $(zipFilename.baseName) ...");
+    }
+
+    scope(exit)
+    {
+        if (showProgress)
+        {
+            // Linebreak after progress bar dots
+            writeln();
+        }
+    }
 
     auto zip = new ZipArchive(zipFilename.read);
 
     foreach (const filename, member; zip.directory)
     {
         if (!member.compressedSize) continue;
+
+        if (pred && !pred(filename)) continue;
+
+        if (showProgress)
+        {
+            std.stdio.write(progressChar);
+            stdout.flush();
+        }
 
         string path = filename;
 
@@ -113,10 +145,8 @@ void unzipArchive(
 
         mkdirRecurse(path.dirName);
         zip.expand(member);
-        write(path, member.expandedData);
+        std.file.write(path, member.expandedData);
     }
-
-    destroy(zip);
 }
 
 
