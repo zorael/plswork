@@ -1,35 +1,25 @@
 # Uffie Puffie Patchy Fixy
 
-This will set up Dark Souls III with both The Convergence and Seamless Co-op mods.
+This will set up **Dark Souls III** with both [**The Convergence**](https://www.nexusmods.com/darksouls3/mods/672) and [**Seamless Co-op**](https://www.nexusmods.com/darksouls3/mods/1895) mods. Tested on Windows, desktop Linux and Steam Deck.
 
 ## plswork
 
-Create a directory anywhere. It doesn't have to be in the Dark Souls III game directory. Let's call it the root directory.
+Create a directory anywhere. It doesn't have to be in the Dark Souls III game directory. Let's call it the **root** directory.
 
-Download these and place them there:
+> A directory is a folder.
+
+Download these zip files and place them there:
 
 1. ModEngine2: [https://github.com/soulsmods/ModEngine2/releases](https://github.com/soulsmods/ModEngine2/releases)
 2. Seamless Co-op: [https://www.nexusmods.com/darksouls3/mods/1895?tab=files](https://www.nexusmods.com/darksouls3/mods/1895?tab=files)
 3. HoodiePatcher **v1.15.2**: [https://www.nexusmods.com/darksouls3/mods/1933?tab=files](https://www.nexusmods.com/darksouls3/mods/1933?tab=files)
-4. The Convergence: [https://www.nexusmods.com/darksouls3/mods/672?tab=files](https://www.nexusmods.com/darksouls3/mods/672?tab=files)
-
-For *The Convergence* I suggest scrolling down on the files tab to `The Convergence 2.2.1` zip link and downloading that instead of the installer up top.
-
-Open said *Convergence* zip and copy/extract `The Convergence` directory from inside it into the root. **Only** that directory, not the DLLs adjacent to it. (If you used the installer instead, you will have to find the directory yourself and copy/move it over.)
-
-The file hierarchy should now look like this:
-
-```
-root
-└── The Convergence
-    └── ...
-```
+4. The Convergence: [https://www.nexusmods.com/darksouls3/mods/672?tab=files](https://www.nexusmods.com/darksouls3/mods/672?tab=files) *(scroll down and download **the zip**) <-- **!***
 
 Download a prebuilt `.exe` from under [**Releases**](https://github.com/zorael/plswork/release), or [compile it yourself](#compiling-it-yourself). Place it in the root directory next to the zips.
 
-Double-click it to extract the zips to the appropriate places.
+Double-click it to extract files.
 
-The file hierarchy should now look like this:
+The resulting file hierarchy should look like this:
 
 ```
 root
@@ -46,7 +36,7 @@ root
 └── modengine2.exe
 ```
 
-As a last step, edit `ds3sc_settings.ini` inside the `SeamlessCoop` directory and at minimum set a `cooppassword` down near the end. The program will have set it to `uffie puffie` but you might want something else.
+Optionally, open `ds3sc_settings.ini` inside the `SeamlessCoop` directory in a text editor and change the `cooppassword` near the end. The program will have set it to "`uffie puffie`" but you might want something else.
 
 ### Windows
 
@@ -60,9 +50,9 @@ As *Filter* (underneath the *Name* entry field), select **All Files**. `launchmo
 
 You're returned to the *Add Non-Steam Game* list of applications it knows about. Scroll down and make sure it has `launchmod_darksouls3.bat` in it and that it is checked. Finally click *Add Selected Programs*.
 
-Find `launchmod_darksouls3.bat` in your library. **If it is not visible or there's something there but with an empty name, exit Steam fully and open it again.**
+Find `launchmod_darksouls3.bat` in your library. **If it is not visible or if there's *something* there but with an empty name, restart Steam.**
 
-Go into its Properties and set a Proton version in the *Compatibility* section. I've been using `8.0-5`, but the currently-latest `GE-Proton9-25` seems to work well too. Also give it a better name.
+Go into its Properties and set a Proton version in the *Compatibility* section. I've been using `8.0-5`, but the currently-latest `GE-Proton9-25` seems to work well too. Give it a better name.
 
 **(Steam Deck)** Hop back to game mode.
 
@@ -70,15 +60,15 @@ Start the game through Steam.
 
 ### Success? [Y/n]: _
 
-You'll know you did it right if the main menu shows The Convergence art while it also says "Seamless Co-op" in the upper left.
+You'll know you succeeded if the main menu shows The Convergence art while it also says "Seamless Co-op" in the upper left.
 
 ## Downloading `.exe`s from strangers is a bad idea
 
-I have no way to prove that the binary I provide is safe. The source is there if you want to peruse it.
+I have no way to prove that the binary I provide is safe. The source is there if you want to peruse it. Trust me, or don't. There's not much I can do.
 
 ### Compiling it yourself
 
-Clone the repository, then download a [D](https://dlang.org) compiler and run `dub build` in the project directory.
+Clone the repository, download a [D](https://dlang.org) compiler, then run `dub build` in the project directory. Copy the resulting binary to your root directory and execute.
 
 ## License
 
