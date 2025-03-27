@@ -11,15 +11,15 @@ Create a directory anywhere. It doesn't have to be in the Dark Souls III game di
 Download these zip files and place them there:
 
 1. ModEngine2: [https://github.com/soulsmods/ModEngine2/releases](https://github.com/soulsmods/ModEngine2/releases)
-2. Seamless Co-op: [https://www.nexusmods.com/darksouls3/mods/1895?tab=files](https://www.nexusmods.com/darksouls3/mods/1895?tab=files)
-3. HoodiePatcher **v1.15.2**: [https://www.nexusmods.com/darksouls3/mods/1933?tab=files](https://www.nexusmods.com/darksouls3/mods/1933?tab=files)
-4. The Convergence: [https://www.nexusmods.com/darksouls3/mods/672?tab=files](https://www.nexusmods.com/darksouls3/mods/672?tab=files) *(scroll down and download **the zip**) <-- **!***
+2. Seamless Co-op: [https://www.nexusmods.com/darksouls3/mods/1895](https://www.nexusmods.com/darksouls3/mods/1895?tab=files)
+3. HoodiePatcher **v1.15.2**: [https://www.nexusmods.com/darksouls3/mods/1933](https://www.nexusmods.com/darksouls3/mods/1933?tab=files)
+4. The Convergence: [https://www.nexusmods.com/darksouls3/mods/672](https://www.nexusmods.com/darksouls3/mods/672?tab=files) *(scroll down and download **the zip** under **Optional Files**)*
 
 Download a prebuilt `.exe` from under [**Releases**](https://github.com/zorael/plswork/release), or [compile it yourself](#compiling-it-yourself). Place it in the root directory next to the zips.
 
-Double-click it to extract files.
+Double-click it to extract the files.
 
-The resulting file hierarchy should look like this:
+Excluding the zips, the resulting file hierarchy should look like this:
 
 ```
 root
@@ -64,7 +64,7 @@ You'll know you succeeded if the main menu shows The Convergence art while it al
 
 ## Downloading `.exe`s from strangers is a bad idea
 
-I have no way to prove that the binary I provide is safe. The source is there if you want to peruse it. Trust me, or don't. There's not much I can do.
+I have no way to prove that the binary I provide is not malicious. Encouragring you to trust me would just be doubly suspicious. There's not much I can do. Trust me, or don't. The source is there if you want to peruse it.
 
 ### Compiling it yourself
 
