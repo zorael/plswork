@@ -162,6 +162,7 @@ void modifyTOML(const string filename) @safe
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
     import std.array : Appender, join;
+    import std.string : stripRight;
 
     Appender!(string[]) sink;
     sink.reserve(64);
@@ -204,9 +205,12 @@ void modifyTOML(const string filename) @safe
         }
     }
 
+    const contents = sink[]
+        .join("\n")
+        .stripRight;
+
     writeln(i"Modifying: $(filename) ...");
-    const fileString = sink[].join("\n");
-    File(filename, "w").writeln(fileString);
+    File(filename, "w").writeln(contents);
 }
 
 
@@ -222,6 +226,7 @@ void modifyINI(const string filename) @safe
     import std.algorithm.iteration : splitter;
     import std.algorithm.searching : startsWith;
     import std.array : Appender, join;
+    import std.string : stripRight;
 
     Appender!(string[]) sink;
     sink.reserve(128);
@@ -258,9 +263,12 @@ void modifyINI(const string filename) @safe
         }
     }
 
+    auto contents = sink[]
+        .join("\n")
+        .stripRight;
+
     writeln(i"Modifying: $(filename) ...");
-    const fileString = sink[].join("\n");
-    File(filename, "w").writeln(fileString);
+    File(filename, "w").writeln(contents);
 }
 
 
