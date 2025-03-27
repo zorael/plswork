@@ -47,6 +47,9 @@ enum ZipGlobs
 
     /// Glob for the Seamless Co-op zip file.
     seamless = "DS3 Seamless*.zip",
+
+    /// Glob for The Convergence zip file.
+    convergence = "The Convergence*.zip",
 }
 
 
@@ -428,13 +431,15 @@ auto getZipFilenames(const bool outputToTerminal)
         string modengine;
         string hoodiePatcher;
         string seamless;
+        string convergence;
 
         auto success() const
         {
             return
                 (modengine.length > 0) &&
                 (hoodiePatcher.length > 0) &&
-                (seamless.length > 0);
+                (seamless.length > 0) &&
+                (convergence.length > 0);
         }
     }
 
@@ -458,6 +463,10 @@ auto getZipFilenames(const bool outputToTerminal)
         {
             zipFilenames.seamless = entry.name;
         }
+        else if (fileBaseName.globMatch(cast(string) ZipGlobs.convergence))
+        {
+            zipFilenames.convergence = entry.name;
+        }
     }
 
     if (outputToTerminal && !zipFilenames.success)
@@ -475,6 +484,11 @@ auto getZipFilenames(const bool outputToTerminal)
         if (zipFilenames.seamless.length == 0)
         {
             writeln(i`[ERROR] Missing Seamless Co-op zip. (no matches for "$(cast(string) ZipGlobs.seamless)")`);
+        }
+
+        if (zipFilenames.convergence.length == 0)
+        {
+            writeln(i`[ERROR] Missing The Convergence zip. (no matches for "$(cast(string) ZipGlobs.convergence)")`);
         }
     }
 
@@ -508,9 +522,15 @@ int main()
 
     try
     {
+        import std.algorithm.searching : startsWith;
+
+        auto convergencePred(string filename) => filename.startsWith("The Convergence");
+        auto seamlessPred(string filename) => filename.startsWith("SeamlessCoop");
+
         unzipArchive(zipFilename: zipFilenames.modengine, numDirsToSkip: 1);
         unzipArchive(zipFilename: zipFilenames.hoodiePatcher, subdirectory: "HoodiePatcher");
-        unzipArchive(zipFilename: zipFilenames.seamless);
+        unzipArchive(zipFilename: zipFilenames.seamless, pred: &seamlessPred);
+        unzipArchive(zipFilename: zipFilenames.convergence, pred: &convergencePred);
         writeln();
 
         modifyTOML("config_darksouls3.toml");
