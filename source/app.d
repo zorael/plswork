@@ -90,6 +90,7 @@ void unzipArchive(
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
+    import std.mmfile : MmFile;
     import std.zip : ZipArchive;
 
     enum progressChar = '.';
@@ -113,7 +114,9 @@ void unzipArchive(
         }
     }
 
-    auto zip = new ZipArchive(zipFilename.read);
+    // mmap the zip file instead of reading all of it into memory.
+    scope mmFile = new MmFile(zipFilename);
+    scope zip = new ZipArchive(mmFile[]);
 
     foreach (const filename, member; zip.directory)
     {
