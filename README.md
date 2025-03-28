@@ -71,7 +71,7 @@ You'll know you succeeded if the game starts up without errors and the main menu
 
 Precompiled binaries for Windows and Linux can be found under [**Releases**](https://github.com/zorael/plswork/releases).
 
-I have no way to prove that they are not malicious. Encouragring you to trust me would just be doubly suspicious. There's not much I can do. Trust me, or don't. The source is there if you want to peruse it. It has basic documentation and comments, so it should be fairly easy to follow what it's doing.
+I have no way to prove that they are not malicious. Encouraging you to trust me would just be doubly suspicious. There's not much I can do. Trust me, or don't. The source is there if you want to peruse it. It has basic documentation and comments, so it should be fairly easy to follow what it's doing.
 
 ### Compiling it yourself
 

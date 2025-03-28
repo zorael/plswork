@@ -262,7 +262,7 @@ void modifyTOML(const string filename) @safe
 
     The `allow_invaders`, `death_debuffs` and `overhead_player_display`
     settings are modified to disable invaders, disable debuffs and show player
-    level+ping repectively.
+    level+ping respectively.
 
     The `cooppassword` setting is set to the value of the `coopPassword` enum.
 
