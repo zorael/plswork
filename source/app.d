@@ -2,12 +2,14 @@
     Uffie Puffie Patchy Fixy.
 
     Extracts zips for ModEngine2, a custom HoodiePatcher, Dark Souls III
-    Seamless Co-op and Dark Souls III: The Convergence.
+    Seamless Co-op and Dark Souls III: The Convergence. If The Convergence seems
+    to be installed already, it will not be extracted again.
 
     Modifies the ModEngine .toml configuration file for Dark Souls III to load
     both Seamless Co-op and The Convergence.
 
-    Modifies the Seamless Co-op .ini file to set a default co-op password.
+    Modifies the Seamless Co-op .ini file and disables invaders, disables death
+    debuffs, modifies the nameplate and sets a default co-op password.
 
     Removes unwanted files from the root directory.
 
@@ -53,7 +55,7 @@ enum ZipGlobs
     modengine = "ModEngine-2*.zip",
 
     /// Glob for the HoodiePatcher zip file.
-    hoodiePatcher = "HoodiePatcher v1.5*.zip",
+    hoodiePatcher = "HoodiePatcher v1.5.*.zip",
 
     /// Glob for the Seamless Co-op zip file.
     seamless = "DS3 Seamless*.zip",
@@ -87,18 +89,20 @@ void unzipArchive(
     const uint numDirsToSkip = 0,
     bool delegate(string) pred = null,
     const bool showProgress = true)
+in ((zipFilename.length > 0), "Empty zip filename passed to unzipArchive")
 {
     import std.algorithm.searching : endsWith;
     import std.array : array, join;
     import std.mmfile : MmFile;
     import std.zip : ZipArchive;
 
-    enum progressChar = '.';
+    enum progressBarCharacter = '.';
 
     if (showProgress)
     {
+        // Use std.stdio.write if we're printing a progress bar.
         std.stdio.write(i"Extracting: $(zipFilename.baseName) ");
-        stdout.flush();
+        stdout.flush();  // Must flush after each std.stdio.write
     }
     else
     {
@@ -109,7 +113,7 @@ void unzipArchive(
     {
         if (showProgress)
         {
-            // Linebreak after progress bar dots
+            // On function exit, output a linebreak after progress bar dots.
             writeln();
         }
     }
@@ -120,27 +124,38 @@ void unzipArchive(
 
     foreach (const filename, member; zip.directory)
     {
-        if (!member.compressedSize) continue;
+        // Some zip files seem to report directories as being 0-sized files.
+        if (member.compressedSize == 0) continue;
 
+        // Skip the file if a predicate was passed and this filename fails it.
         if (pred && !pred(filename)) continue;
 
         if (showProgress)
         {
-            std.stdio.write(progressChar);
-            stdout.flush();
+            // Advance progress bar. Flush after writing to ensure the dot is output.
+            std.stdio.write(progressBarCharacter);
+            stdout.flush();  // Must flush after each std.stdio.write
         }
 
-        string path = filename;
+        string path = filename;  // mutable
 
         if (numDirsToSkip > 0)
         {
+            /*
+                Split the filename into its path components and skip the first
+                `numDirsToSkip` directories. The path components are separated
+                by the platform-specific directory separator by `pathSplitter`.
+                The components are then joined again with the same separator.
+             */
             auto splitPath = pathSplitter(filename).array;
 
             if (numDirsToSkip > splitPath.length)
             {
                 import std.conv : text;
-                const message = i"File $(filename) in $(zipFilename) did not have $(numDirsToSkip) directories to skip";
-                throw new Exception(message.text);
+                const message = text(
+                    i"File $(filename) in $(zipFilename) did not have ",
+                    i"$(numDirsToSkip) directories to skip");
+                throw new Exception(message);
             }
 
             path = splitPath[numDirsToSkip..$].join(dirSeparator);
@@ -148,17 +163,21 @@ void unzipArchive(
 
         if (subdirectory.length > 0)
         {
+            // Extract the files in a subdirectory if one was specified.
             path = buildPath(subdirectory, path);
         }
 
+        // Unsure if this ever happens.
         if (path.exists) continue;
 
         if (filename.endsWith(dirSeparator) || member.fileAttributes.attrIsDir)
         {
+            // We should have already continued past 0-size "files"...
             mkdirRecurse(path);
             continue;
         }
 
+        // Create the parent directory in case the order of files in the zip is weird.
         mkdirRecurse(path.dirName);
         zip.expand(member);
         std.file.write(path, member.expandedData);
@@ -169,6 +188,10 @@ void unzipArchive(
 // modifyTOML
 /**
     Modifies the ModEngine2 .toml file.
+
+    An entry is added to the `external_dlls` array for the Seamless Co-op and
+    HoodiePatcher .dll files. An entry is added to the `mods` array for The
+    Convergence mod. The `scylla_hide` section is disabled.
 
     Params:
         filename = The filename of the .toml file.
@@ -181,18 +204,18 @@ void modifyTOML(const string filename) @safe
     import std.string : stripRight;
 
     Appender!(string[]) sink;
-    sink.reserve(64);
-    bool skipNext;
+    sink.reserve(64);  // ~13
+    bool skipNextLine;
 
-    auto fileLines = filename
+    auto rangeOfLines = filename
         .readText
         .splitter("\n");
 
-    foreach (const line; fileLines)
+    foreach (const line; rangeOfLines)
     {
-        if (skipNext)
+        if (skipNextLine)
         {
-            skipNext = false;
+            skipNextLine = false;
             continue;
         }
 
@@ -206,21 +229,24 @@ void modifyTOML(const string filename) @safe
             enum convergenceLine = `    { enabled = true, name = "Convergence", path = "The Convergence" }`;
             sink.put(line);
             sink.put(convergenceLine);
-            skipNext = true;
+            skipNextLine = true;
         }
         else if (line.startsWith("[extension.scylla_hide]"))
         {
             enum scyllaLine = "enabled = false";
             sink.put(line);
             sink.put(scyllaLine);
-            skipNext = true;
+            skipNextLine = true;
         }
         else
         {
+            // Passthrough.
             sink.put(line);
         }
     }
 
+    // Flatten the array of lines into a single string.
+    // Any trailing newlines are removed by stripRight.
     const contents = sink[]
         .join("\n")
         .stripRight;
@@ -233,6 +259,12 @@ void modifyTOML(const string filename) @safe
 // modifyINI
 /**
     Modifies the Seamless Co-op .ini file.
+
+    The `allow_invaders`, `death_debuffs` and `overhead_player_display`
+    settings are modified to disable invaders, disable debuffs and show player
+    level+ping repectively.
+
+    The `cooppassword` setting is set to the value of the `coopPassword` enum.
 
     Params:
         filename = The filename of the .ini file.
@@ -247,11 +279,11 @@ void modifyINI(const string filename) @safe
     Appender!(string[]) sink;
     sink.reserve(128);
 
-    auto fileLines = filename
+    auto rangeOfLines = filename
         .readText
         .splitter("\n");
 
-    foreach (const line; fileLines)
+    foreach (const line; rangeOfLines)
     {
         if (line.startsWith("allow_invaders"))
         {
@@ -275,11 +307,14 @@ void modifyINI(const string filename) @safe
         }
         else
         {
+            // Passthrough.
             sink.put(line);
         }
     }
 
-    auto contents = sink[]
+    // Flatten the array of lines into a single string.
+    // Any trailing newlines are removed by stripRight.
+    const contents = sink[]
         .join("\n")
         .stripRight;
 
@@ -292,6 +327,9 @@ void modifyINI(const string filename) @safe
 /**
     Removes unwanted files from the root directory.
 
+    Not all files break the setup, but they're not needed and can be removed
+    to avoid confusion.
+
     Returns:
         true if all files were removed successfully; false otherwise.
  */
@@ -299,34 +337,34 @@ auto removeUnwantedRootFiles()
 {
     import std.algorithm.comparison : among;
 
-    auto root = dirEntries(".", SpanMode.shallow);
+    auto rootFiles = dirEntries(".", SpanMode.shallow);
     bool success = true;
 
-    foreach (/*const*/ filename; root)
+    foreach (/*const*/ entry; rootFiles)
     {
-        const fileBaseName = filename.baseName;
+        const fileBaseName = entry.baseName;
 
-        if (fileBaseName.globMatch("*.dll") ||
-            fileBaseName.globMatch("*.ini") ||
-            fileBaseName.among!(
+        if (fileBaseName.among!(
                 "launchmod_armoredcore6.bat",
                 "launchmod_eldenring.bat",
                 "config_armoredcore6.toml",
                 "config_eldenring.toml",
                 "README.txt",
-                "mod"))
+                "mod") ||
+            fileBaseName.globMatch("*.dll") ||
+            fileBaseName.globMatch("*.ini"))
         {
             try
             {
-                if (filename.isDir)
+                if (entry.isDir)
                 {
                     writeln(i"Removing unwanted directory: $(fileBaseName) ...");
-                    rmdir(filename);
+                    rmdir(entry);
                 }
                 else
                 {
                     writeln(i"Removing unwanted file: $(fileBaseName) ...");
-                    remove(filename);
+                    remove(entry);
                 }
             }
             catch (FileException e)
@@ -345,6 +383,12 @@ auto removeUnwantedRootFiles()
 // verifyInstallation
 /**
     Verifies the installation.
+
+    Does not check for the presence of all required files, but only one missing
+    should break the setup anyway.
+
+    A special check is made to ensure that stray .dlls and .ini files from
+    The Convergence zip archive are not present in the root directory.
 
     Returns:
         true if the installation seems correct; false otherwise.
@@ -381,7 +425,7 @@ auto verifyInstallation() @safe
     {
         if (!filename.exists)
         {
-            if (success) writeln();
+            if (success) writeln();  // Output a linebreak if this is the first error
             writeln(i"[ERROR] Missing file: $(filename)");
             success = false;
         }
@@ -391,7 +435,7 @@ auto verifyInstallation() @safe
     {
         if (filename.exists)
         {
-            if (success) writeln();
+            if (success) writeln();  // As above
             writeln(i"[ERROR] File must not exist: $(filename)");
             success = false;
         }
@@ -404,6 +448,9 @@ auto verifyInstallation() @safe
 // waitForEnter
 /**
     Waits for the user to press Enter.
+
+    The return value is meant to be used as the return value of `main`.
+    The message output is based on the success of the previous operations.
 
     Params:
         success = Whether the previous operations were successful and the
@@ -431,14 +478,18 @@ auto waitForEnter(const bool success)
 
 // discoverFiles
 /**
-    Looks for zip files that matc the glob patterns of the ZipGlobs enum.
+    Looks for zip files that match the glob patterns of the ZipGlobs enum.
     Populates a Voldemort struct with the filenames and returns it.
+
+    Params:
+        outputToTerminal = Whether to output any error messages to the terminal.
 
     Returns:
         A Voldemort with resolved filenames.
  */
 auto discoverFiles(const bool outputToTerminal)
 {
+    // Voldemort.
     static struct Discovered
     {
         string modengineZip;
@@ -459,9 +510,9 @@ auto discoverFiles(const bool outputToTerminal)
 
     Discovered found;
 
-    auto files = dirEntries(".", SpanMode.shallow);
+    auto rootFiles = dirEntries(".", SpanMode.shallow);
 
-    foreach (const entry; files)
+    foreach (const entry; rootFiles)
     {
         const fileBaseName = entry.name.baseName;
 
@@ -520,11 +571,11 @@ public:
 
 // main
 /**
-    The main function.
+    `main`.
 
     Returns:
         0 if the extraction, modification, removal and verification were all
-        successful; 1 otherwise.
+        successful; 1 in all other cases.
  */
 int main()
 {
@@ -532,10 +583,13 @@ int main()
     writeln("=============================");
     writeln();
 
+    // Find the zip files.
     const found = discoverFiles(outputToTerminal: true);
 
     if (!found.success)
     {
+        // At least one file is missing.
+        // An error message will already have been output, so just read an Enter and exit.
         return waitForEnter(success: false);
     }
 
@@ -543,39 +597,63 @@ int main()
     {
         import std.algorithm.searching : startsWith;
 
+        /*
+            Predicate functions to filter out files in the zip archives.
+            These are used to skip files in The Convergence and Seamless Co-op
+            zips that are not needed.
+         */
         auto convergencePred(string filename) => filename.startsWith("The Convergence");
         auto seamlessPred(string filename) => filename.startsWith("SeamlessCoop");
 
-        unzipArchive(zipFilename: found.modengineZip, numDirsToSkip: 1);
-        unzipArchive(zipFilename: found.hoodiePatcherZip, subdirectory: "HoodiePatcher");
-        unzipArchive(zipFilename: found.seamlessZip, pred: &seamlessPred);
+        // Extract all files, applying predicate filters where needed.
+        unzipArchive(
+            zipFilename: found.modengineZip,
+            numDirsToSkip: 1);
+
+        unzipArchive(
+            zipFilename: found.hoodiePatcherZip,
+            subdirectory: "HoodiePatcher");
+
+        unzipArchive(
+            zipFilename: found.seamlessZip,
+            pred: &seamlessPred);
 
         if (found.convergenceDir.length == 0)
         {
-            // convergence or theConvergenceDir must either have length at this point
-            // else found.success above would have been false
-            unzipArchive(zipFilename: found.convergenceZip, pred: &convergencePred);
+            /*
+                The `convergence` or `theConvergenceDir` members of `found` must
+                either have length at this point; otherwise found.success above
+                would have been false
+             */
+            unzipArchive(
+                zipFilename: found.convergenceZip,
+                pred: &convergencePred);
         }
 
+        // Make the sure the .toml file refers to the correct mods and .dll files.
+        // Modify the Seamless Co-op .ini to change settings and set a password.
         writeln();
-
         modifyTOML("config_darksouls3.toml");
         modifyINI(buildPath("SeamlessCoop", "ds3sc_settings.ini"));
         writeln();
 
+        // Clean up the root directory.
         const removeSuccess = removeUnwantedRootFiles();
         writeln();
 
+        // Check for the presence of some files to verify the installation.
         const verifySuccess = verifyInstallation();
         //writeln();
 
+        // Read an Enter and exit.
         return waitForEnter(success: (removeSuccess && verifySuccess));
     }
     catch (Exception e)
     {
+        // Output the full error, read an Enter and exit.
         writeln(e);
         return waitForEnter(success: false);
     }
 
-    assert(0, "unreachable");
+    assert(0, "Unreachable");
 }
